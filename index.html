@@ -1,450 +1,826 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>사주 보기 · 네 기둥 세우기</title>
+<title>네기둥 · 내 사주 세우기</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#F3F1FB;
-    --paper:#FFFFFF;
-    --ink:#4A4458;
-    --ink-soft:#8B84A3;
-    --line:#E7E2F7;
-    --lilac:#C6B8F2;
-    --lilac-deep:#9E8AE0;
-    --mint:#AEE3D4;
-    --butter:#FFE9A8;
-    --apricot:#FFC8A6;
-    --blush:#FFD3E2;
-    --radius-card:30px;
-    --radius-field:16px;
+    --bg:#F3F1FB; --paper:#FFFFFF; --ink:#4A4458; --ink-soft:#8B84A3;
+    --line:#E7E2F7; --lilac:#C6B8F2; --lilac-deep:#9E8AE0;
+    --mint:#AEE3D4; --butter:#FFE9A8; --apricot:#FFC8A6; --blush:#FFD3E2; --sky:#C5DCF2;
   }
-
   *{box-sizing:border-box;}
-
   body{
-    margin:0;
-    padding:40px 20px 72px;
+    margin:0; padding:0;
     background-color:var(--bg);
     background-image:radial-gradient(var(--line) 1.4px, transparent 1.4px);
     background-size:22px 22px;
-    font-family:'Gowun Dodum', -apple-system, BlinkMacSystemFont, sans-serif;
-    color:var(--ink);
-    line-height:1.7;
-    -webkit-font-smoothing:antialiased;
+    font-family:'Gowun Dodum',-apple-system,BlinkMacSystemFont,sans-serif;
+    color:var(--ink); line-height:1.7; -webkit-font-smoothing:antialiased;
   }
+  .wrap{max-width:560px; margin:0 auto; padding:0 18px;}
+
+  /* ── 상단 ─────────────────────────── */
+  .topbar{padding:22px 0 0; text-align:center;}
+  .brand{font-family:'Jua',sans-serif; font-size:17px; letter-spacing:1px; color:var(--lilac-deep);}
+
+  .hero{text-align:center; padding:26px 0 30px;}
+  .moon{display:block; margin:0 auto 12px;}
+  h1{font-family:'Jua',sans-serif; font-weight:400; font-size:32px; letter-spacing:-.6px; margin:0 0 10px;}
+  .hero p{margin:0; color:var(--ink-soft); font-size:15px;}
 
   .sheet{
-    max-width:520px;
-    margin:0 auto;
-    background:var(--paper);
-    border:2px solid var(--line);
-    border-radius:var(--radius-card);
+    background:var(--paper); border:2px solid var(--line); border-radius:30px;
     box-shadow:0 18px 40px -18px rgba(140,120,205,.30);
-    padding:36px 30px 34px;
+    padding:32px 28px 30px; margin-bottom:26px;
   }
 
-  /* ── 머리말 ───────────────────────────── */
-  .head{text-align:center;margin-bottom:26px;}
-  .moon{display:block;margin:0 auto 10px;}
-  h1{
-    font-family:'Jua', sans-serif;
-    font-weight:400;
-    font-size:29px;
-    letter-spacing:-.5px;
-    margin:0 0 6px;
-  }
-  .head p{margin:0;color:var(--ink-soft);font-size:14.5px;}
-
-  /* ── 네 기둥 ───────────────────────────── */
-  .pillars{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:9px;
-    margin-bottom:30px;
-  }
+  /* ── 네 기둥 미리보기 ───────────────── */
+  .pillars{display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin-bottom:28px;}
   .pillar{
-    border:2px dashed var(--line);
-    border-radius:20px;
-    padding:13px 4px 12px;
-    text-align:center;
-    background:#FCFBFF;
+    border:2px dashed var(--line); border-radius:20px; padding:13px 4px 12px;
+    text-align:center; background:#FCFBFF;
     transition:background-color .35s ease, border-color .35s ease, transform .35s ease;
   }
-  .pillar .glyph{
-    font-family:'Jua', sans-serif;
-    font-size:20px;
-    color:#C8C2DC;
-    display:block;
-    line-height:1.2;
-    transition:color .35s ease;
-  }
-  .pillar .val{
-    display:block;
-    margin-top:3px;
-    font-size:13px;
-    color:#C8C2DC;
-    min-height:22px;
-    transition:color .35s ease;
-  }
-  .pillar.on{border-style:solid;border-color:transparent;transform:translateY(-3px);}
+  .pillar .glyph{font-family:'Jua',sans-serif; font-size:20px; color:#C8C2DC; display:block; line-height:1.2; transition:color .35s ease;}
+  .pillar .val{display:block; margin-top:3px; font-size:13px; color:#C8C2DC; min-height:22px; transition:color .35s ease;}
+  .pillar.on{border-style:solid; border-color:transparent; transform:translateY(-3px);}
   .pillar.on .glyph,.pillar.on .val{color:var(--ink);}
-  .pillar.on[data-p="year"] {background:var(--mint);}
+  .pillar.on[data-p="year"]{background:var(--mint);}
   .pillar.on[data-p="month"]{background:var(--butter);}
-  .pillar.on[data-p="day"]  {background:var(--apricot);}
-  .pillar.on[data-p="hour"] {background:var(--lilac);}
+  .pillar.on[data-p="day"]{background:var(--apricot);}
+  .pillar.on[data-p="hour"]{background:var(--lilac);}
 
-  /* ── 입력 ─────────────────────────────── */
+  /* ── 입력 ───────────────────────────── */
   .field{margin-bottom:22px;}
-  .field > label,
-  .legend{
-    display:block;
-    font-size:14.5px;
-    margin-bottom:9px;
-    color:var(--ink);
-  }
-  .legend .hint{color:var(--ink-soft);font-size:13px;}
-
-  fieldset{border:0;margin:0;padding:0;}
-
-  input[type="text"], select{
-    width:100%;
-    font-family:inherit;
-    font-size:15.5px;
-    color:var(--ink);
-    background:#FBFAFF;
-    border:2px solid var(--line);
-    border-radius:var(--radius-field);
-    padding:12px 14px;
-    appearance:none;
+  .field > label,.legend{display:block; font-size:14.5px; margin-bottom:9px; color:var(--ink);}
+  .hint{color:var(--ink-soft); font-size:13px;}
+  fieldset{border:0; margin:0; padding:0;}
+  input[type="text"],select{
+    width:100%; font-family:inherit; font-size:15.5px; color:var(--ink);
+    background:#FBFAFF; border:2px solid var(--line); border-radius:16px;
+    padding:12px 14px; appearance:none;
     transition:border-color .2s ease, background-color .2s ease;
   }
   input[type="text"]::placeholder{color:#BDB6D0;}
   select{
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%239E8AE0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat:no-repeat;
-    background-position:right 14px center;
-    padding-right:36px;
-    cursor:pointer;
+    background-repeat:no-repeat; background-position:right 14px center; padding-right:36px; cursor:pointer;
   }
-  input[type="text"]:hover, select:hover{border-color:#D7CFF3;}
-  input[type="text"]:focus, select:focus{
-    outline:none;
-    border-color:var(--lilac-deep);
-    background:#fff;
-  }
-  :focus-visible{outline:3px solid #DFD6FA;outline-offset:2px;}
+  input[type="text"]:hover,select:hover{border-color:#D7CFF3;}
+  input[type="text"]:focus,select:focus{outline:none; border-color:var(--lilac-deep); background:#fff;}
+  :focus-visible{outline:3px solid #DFD6FA; outline-offset:2px;}
+  .row{display:grid; grid-template-columns:1.25fr 1fr 1fr; gap:9px;}
 
-  .row{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:9px;}
+  .segmented{display:inline-flex; background:#F5F2FE; border-radius:999px; padding:4px; gap:2px; margin-bottom:11px;}
+  .segmented label{position:relative; cursor:pointer;}
+  .segmented input{position:absolute; opacity:0; width:100%; height:100%; left:0; top:0; margin:0; cursor:pointer;}
+  .segmented span{display:block; padding:7px 20px; border-radius:999px; font-size:14.5px; color:var(--ink-soft); transition:background-color .2s ease,color .2s ease;}
+  .segmented input:checked + span{background:var(--lilac-deep); color:#fff;}
+  .segmented input:focus-visible + span{outline:3px solid #DFD6FA; outline-offset:2px;}
 
-  /* 양력·음력 */
-  .segmented{
-    display:inline-flex;
-    background:#F5F2FE;
-    border-radius:999px;
-    padding:4px;
-    gap:2px;
-    margin-bottom:11px;
-  }
-  .segmented label{position:relative;cursor:pointer;}
-  .segmented input{position:absolute;opacity:0;width:100%;height:100%;left:0;top:0;margin:0;cursor:pointer;}
-  .segmented span{
-    display:block;
-    padding:7px 20px;
-    border-radius:999px;
-    font-size:14.5px;
-    color:var(--ink-soft);
-    transition:background-color .2s ease, color .2s ease;
-  }
-  .segmented input:checked + span{background:var(--lilac-deep);color:#fff;}
-  .segmented input:focus-visible + span{outline:3px solid #DFD6FA;outline-offset:2px;}
-
-  /* 체크박스 */
-  .check{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:var(--ink-soft);}
+  .check{display:inline-flex; align-items:center; gap:8px; cursor:pointer; font-size:14px; color:var(--ink-soft);}
   .check input{
-    appearance:none;
-    width:19px;height:19px;
-    margin:0;
-    border:2px solid var(--line);
-    border-radius:7px;
-    background:#FBFAFF;
-    cursor:pointer;
-    transition:background-color .2s ease, border-color .2s ease;
+    appearance:none; width:19px; height:19px; margin:0; border:2px solid var(--line);
+    border-radius:7px; background:#FBFAFF; cursor:pointer; transition:background-color .2s ease,border-color .2s ease;
   }
   .check input:checked{
     background:var(--lilac-deep) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='9' viewBox='0 0 11 9'%3E%3Cpath d='M1 4.5 4 7.5 10 1.5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center no-repeat;
     border-color:var(--lilac-deep);
   }
   .check input:checked + span{color:var(--ink);}
-  #leapWrap{display:none;margin-top:10px;}
+  #leapWrap{display:none; margin-top:10px;}
   #leapWrap.show{display:block;}
-
-  .note{margin:9px 0 0;font-size:13px;color:var(--ink-soft);}
-
-  /* 오류 */
-  .error{
-    display:none;
-    margin:8px 0 0;
-    font-size:13.5px;
-    color:#D96A8A;
-  }
+  .note{margin:9px 0 0; font-size:13px; color:var(--ink-soft);}
+  .error{display:none; margin:8px 0 0; font-size:13.5px; color:#D96A8A;}
   .error.show{display:block;}
-  .invalid input[type="text"], .invalid select{border-color:#F2B6C8;background:#FFF8FA;}
+  .invalid input[type="text"],.invalid select{border-color:#F2B6C8; background:#FFF8FA;}
 
-  /* 버튼 */
   .submit{
-    width:100%;
-    font-family:'Jua', sans-serif;
-    font-size:18px;
-    color:#fff;
-    background:var(--lilac-deep);
-    border:0;
-    border-radius:999px;
-    padding:16px;
-    margin-top:6px;
-    cursor:pointer;
-    transition:background-color .2s ease, transform .1s ease;
+    width:100%; font-family:'Jua',sans-serif; font-size:18px; color:#fff;
+    background:var(--lilac-deep); border:0; border-radius:999px; padding:16px; margin-top:6px;
+    cursor:pointer; transition:background-color .2s ease, transform .1s ease;
   }
   .submit:hover{background:#8E77DA;}
   .submit:active{transform:scale(.985);}
 
-  /* 결과 */
-  .result{
-    display:none;
-    margin-top:24px;
-    padding:22px;
-    border-radius:24px;
-    background:#F7F4FF;
-    border:2px solid var(--line);
-    text-align:center;
-  }
-  .result.show{display:block;}
-  .result h2{font-family:'Jua',sans-serif;font-weight:400;font-size:20px;margin:0 0 8px;}
-  .result p{margin:0;font-size:15px;}
-  .result .again{
-    background:none;border:0;
-    font-family:inherit;font-size:14px;
-    color:var(--lilac-deep);
-    text-decoration:underline;
-    cursor:pointer;
-    margin-top:14px;
-    padding:4px;
-  }
+  /* ── 결과 ───────────────────────────── */
+  #result{display:none;}
+  #result.show{display:block;}
+  .rhead{text-align:center; margin-bottom:24px;}
+  .rhead h2{font-family:'Jua',sans-serif; font-weight:400; font-size:24px; margin:0 0 6px;}
+  .rhead p{margin:0; color:var(--ink-soft); font-size:14px;}
 
-  @media (max-width:420px){
-    body{padding:24px 14px 48px;}
-    .sheet{padding:28px 20px 26px;border-radius:24px;}
-    h1{font-size:25px;}
+  .chart{display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:26px;}
+  .col{text-align:center;}
+  .col .cap{font-size:13px; color:var(--ink-soft); margin-bottom:7px;}
+  .stack{border-radius:20px; overflow:hidden; border:2px solid var(--line);}
+  .cell{padding:12px 2px;}
+  .cell .han{font-family:'Jua',sans-serif; font-size:27px; line-height:1.1;}
+  .cell .kor{font-size:12.5px; color:#6D6684;}
+  .cell.gan{border-bottom:2px solid var(--line);}
+  .cell.empty{background:#FAF9FE; color:#C8C2DC;}
+  .cell.empty .han{color:#D5D0E6;}
+  .oh-목{background:#CCEBD8;} .oh-화{background:#FFD3D8;} .oh-토{background:#FFE9A8;}
+  .oh-금{background:#EDEBF2;} .oh-수{background:#CFDDF5;}
+
+  .facts{border-top:2px dashed var(--line); padding-top:20px;}
+  .fact{display:flex; justify-content:space-between; gap:14px; padding:7px 0; font-size:15px;}
+  .fact dt{color:var(--ink-soft); margin:0; flex:none;}
+  .fact dd{margin:0; text-align:right;}
+  dl{margin:0;}
+
+  .oh-title{font-size:14.5px; margin:22px 0 10px;}
+  .ohbars{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; text-align:center;}
+  .ohbar .bar{height:74px; border-radius:14px; background:#F5F3FC; display:flex; flex-direction:column-reverse; overflow:hidden;}
+  .ohbar .fill{border-radius:12px; transition:height .5s ease;}
+  .ohbar .lb{font-size:13px; margin-top:6px; color:var(--ink-soft);}
+  .ohbar .lb b{font-weight:normal; color:var(--ink);}
+
+  .again{
+    display:block; width:100%; margin-top:24px; background:#F5F2FE; border:0;
+    font-family:inherit; font-size:15px; color:var(--lilac-deep);
+    border-radius:999px; padding:13px; cursor:pointer;
+  }
+  .again:hover{background:#EDE8FC;}
+
+  footer{max-width:560px; margin:0 auto; padding:6px 30px 54px; color:var(--ink-soft); font-size:12.5px;}
+  footer p{margin:0 0 6px;}
+
+  @media (max-width:430px){
+    .wrap{padding:0 12px;}
+    .sheet{padding:26px 18px 24px; border-radius:24px;}
+    h1{font-size:27px;}
     .row{grid-template-columns:1fr 1fr;}
     .row .yr{grid-column:1 / -1;}
+    .cell .han{font-size:23px;}
   }
-  @media (prefers-reduced-motion:reduce){
-    *{transition:none !important;}
+  .adminlink{
+    background:none; border:0; padding:4px 0; margin-top:4px;
+    font-family:inherit; font-size:12.5px; color:#B4ADC8;
+    text-decoration:underline; cursor:pointer;
   }
+  .adminlink:hover{color:var(--lilac-deep);}
+
+  .mask{
+    display:none; position:fixed; inset:0; z-index:50;
+    background:rgba(74,68,88,.42); padding:24px 16px; overflow-y:auto;
+  }
+  .mask.show{display:block;}
+  .box{
+    max-width:520px; margin:0 auto; background:var(--paper);
+    border:2px solid var(--line); border-radius:26px; padding:26px 24px;
+    box-shadow:0 24px 50px -20px rgba(74,68,88,.4);
+  }
+  .box h3{font-family:'Jua',sans-serif; font-weight:400; font-size:20px; margin:0 0 6px;}
+  .box .sub{margin:0 0 18px; font-size:13.5px; color:var(--ink-soft);}
+  .box input[type="password"]{
+    width:100%; font-family:inherit; font-size:15.5px; color:var(--ink);
+    background:#FBFAFF; border:2px solid var(--line); border-radius:16px; padding:12px 14px;
+  }
+  .box input[type="password"]:focus{outline:none; border-color:var(--lilac-deep); background:#fff;}
+  .btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:16px;}
+  .btn{
+    flex:1 1 auto; font-family:inherit; font-size:14.5px; border:0; border-radius:999px;
+    padding:12px 16px; cursor:pointer; background:#F5F2FE; color:var(--lilac-deep);
+  }
+  .btn:hover{background:#EDE8FC;}
+  .btn.primary{background:var(--lilac-deep); color:#fff;}
+  .btn.primary:hover{background:#8E77DA;}
+  .grp{margin-top:20px;}
+  .grp > h4{
+    font-family:'Jua',sans-serif; font-weight:400; font-size:15px; margin:0 0 10px;
+    padding-bottom:7px; border-bottom:2px dashed var(--line);
+  }
+  .ed{margin-bottom:13px;}
+  .ed label{display:block; font-size:13px; color:var(--ink-soft); margin-bottom:5px;}
+  .ed textarea{
+    width:100%; font-family:inherit; font-size:14.5px; color:var(--ink); line-height:1.6;
+    background:#FBFAFF; border:2px solid var(--line); border-radius:14px;
+    padding:10px 12px; resize:vertical; min-height:44px;
+  }
+  .ed textarea:focus{outline:none; border-color:var(--lilac-deep); background:#fff;}
+  .toast{
+    margin-top:12px; font-size:13.5px; color:var(--lilac-deep);
+    background:#F5F2FE; border-radius:12px; padding:9px 12px; display:none;
+  }
+  .toast.show{display:block;}
+  .toast.bad{color:#D96A8A; background:#FFF1F5;}
+
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important;} }
 </style>
 </head>
 <body>
 
-<main class="sheet">
-  <div class="head">
-    <svg class="moon" width="46" height="46" viewBox="0 0 46 46" aria-hidden="true">
+<div class="topbar"><span class="brand" data-key="brand">네기둥</span></div>
+
+<div class="wrap">
+  <div class="hero">
+    <svg class="moon" width="52" height="52" viewBox="0 0 46 46" aria-hidden="true">
       <circle cx="23" cy="24" r="14" fill="#FFE9A8"/>
-      <circle cx="17.5" cy="24" r="14" fill="#fff"/>
+      <circle cx="17.5" cy="24" r="14" fill="#F3F1FB"/>
       <circle cx="37" cy="11" r="2.6" fill="#C6B8F2"/>
       <circle cx="8" cy="14" r="1.8" fill="#AEE3D4"/>
       <circle cx="39" cy="33" r="1.8" fill="#FFC8A6"/>
     </svg>
-    <h1>네 기둥을 세워요</h1>
-    <p>태어난 해·달·날·시간을 적으면 사주가 만들어져요.</p>
+    <h1 data-key="heroTitle">네 기둥을 세워요</h1>
+    <p data-key="heroSub" data-multiline>태어난 해·달·날·시간을 적으면<br>사주팔자 여덟 글자가 만들어져요.</p>
   </div>
 
-  <div class="pillars" aria-hidden="true">
-    <div class="pillar" data-p="year"><span class="glyph">年</span><span class="val" id="pvYear">해</span></div>
-    <div class="pillar" data-p="month"><span class="glyph">月</span><span class="val" id="pvMonth">달</span></div>
-    <div class="pillar" data-p="day"><span class="glyph">日</span><span class="val" id="pvDay">날</span></div>
-    <div class="pillar" data-p="hour"><span class="glyph">時</span><span class="val" id="pvHour">시간</span></div>
+  <!-- 입력 -->
+  <section class="sheet" id="formCard">
+    <div class="pillars" aria-hidden="true">
+      <div class="pillar" data-p="year"><span class="glyph">年</span><span class="val" id="pvYear">해</span></div>
+      <div class="pillar" data-p="month"><span class="glyph">月</span><span class="val" id="pvMonth">달</span></div>
+      <div class="pillar" data-p="day"><span class="glyph">日</span><span class="val" id="pvDay">날</span></div>
+      <div class="pillar" data-p="hour"><span class="glyph">時</span><span class="val" id="pvHour">시간</span></div>
+    </div>
+
+    <div class="field" id="nameField">
+      <label for="name" data-key="labelName">이름</label>
+      <input type="text" id="name" placeholder="이름을 적어주세요" data-key-attr="placeholderName" autocomplete="name">
+      <p class="error" id="nameError" data-key="errName">이름을 적어주세요.</p>
+    </div>
+
+    <div class="field" id="birthField">
+      <fieldset>
+        <legend class="legend" data-key="labelBirth">생년월일</legend>
+        <div class="segmented" role="radiogroup" aria-label="달력 기준">
+          <label><input type="radio" name="cal" value="solar" checked><span data-key="labelSolar">양력</span></label>
+          <label><input type="radio" name="cal" value="lunar"><span data-key="labelLunar">음력</span></label>
+        </div>
+        <div class="row">
+          <select id="year" class="yr" aria-label="태어난 해"></select>
+          <select id="month" aria-label="태어난 달"></select>
+          <select id="day" aria-label="태어난 날"></select>
+        </div>
+        <div id="leapWrap"><label class="check"><input type="checkbox" id="leap"><span data-key="labelLeap">윤달에 태어났어요</span></label></div>
+        <p class="error" id="birthError" data-key="errBirth">태어난 해·달·날을 모두 골라주세요.</p>
+      </fieldset>
+    </div>
+
+    <div class="field" id="hourField">
+      <label for="hour"><span data-key="labelHour">태어난 시간</span> <span class="hint" data-key="hintHour">(십이시진)</span></label>
+      <select id="hour"></select>
+      <label class="check" style="margin-top:11px;"><input type="checkbox" id="unknownHour"><span data-key="labelUnknownHour">시간을 몰라요</span></label>
+      <p class="note" data-key="noteHour">시간을 모르면 시주 없이 세 기둥으로 봐요.</p>
+    </div>
+
+    <button class="submit" id="submit" data-key="btnSubmit">사주 세우기</button>
+  </section>
+
+  <!-- 결과 -->
+  <section class="sheet" id="result" role="region" aria-live="polite">
+    <div class="rhead">
+      <h2 id="rTitle"></h2>
+      <p id="rSub"></p>
+    </div>
+
+    <div class="chart" id="chart"></div>
+
+    <div class="facts">
+      <dl>
+        <div class="fact"><dt data-key="labelIlgan">일간 (나를 나타내는 글자)</dt><dd id="fIlgan"></dd></div>
+        <div class="fact"><dt data-key="labelAnimal">띠</dt><dd id="fAnimal"></dd></div>
+        <div class="fact"><dt data-key="labelTerm">월령 (태어난 절기)</dt><dd id="fTerm"></dd></div>
+      </dl>
+
+      <p class="oh-title" data-key="labelOh">오행 분포</p>
+      <div class="ohbars" id="ohbars"></div>
+      <p class="note" id="ohNote"></p>
+    </div>
+
+    <button class="again" id="again" data-key="btnAgain">다시 입력하기</button>
+  </section>
+</div>
+
+<footer>
+  <p data-key="footer1">연주는 입춘, 월주는 12절기를 기준으로 바뀝니다. 시간은 동경 135도 기준 30분 보정을 적용했어요.</p>
+  <p data-key="footer2">절기와 삭 시각은 천문 계산으로 구합니다. 자정 무렵에 걸친 절입일은 한국천문연구원 만세력과 하루 차이가 날 수 있어요.</p>
+  <button class="adminlink" id="adminOpen">관리자</button>
+</footer>
+
+<div class="mask" id="mask">
+  <div class="box" id="gate">
+    <h3>관리자 모드</h3>
+    <p class="sub">비밀번호를 입력하면 홈페이지 문구를 바꿀 수 있어요.</p>
+    <input type="password" id="pw" placeholder="비밀번호" autocomplete="current-password">
+    <div class="toast bad" id="gateMsg">비밀번호가 맞지 않아요.</div>
+    <div class="btns">
+      <button class="btn" id="gateCancel">닫기</button>
+      <button class="btn primary" id="gateOk">들어가기</button>
+    </div>
   </div>
 
-  <div class="field" id="nameField">
-    <label for="name">이름</label>
-    <input type="text" id="name" placeholder="이름을 적어주세요" autocomplete="name">
-    <p class="error" id="nameError">이름을 적어주세요.</p>
+  <div class="box" id="panel" style="display:none;">
+    <h3>문구 편집</h3>
+    <p class="sub">고친 내용은 저장을 눌러야 반영돼요. 줄바꿈은 그대로 표시됩니다.</p>
+    <div id="editors"></div>
+    <div class="toast" id="panelMsg"></div>
+    <div class="btns">
+      <button class="btn" id="btnReset">기본값</button>
+      <button class="btn" id="btnExport">내보내기</button>
+      <button class="btn" id="btnImport">불러오기</button>
+    </div>
+    <div class="btns">
+      <button class="btn" id="btnClose">닫기</button>
+      <button class="btn primary" id="btnSave">저장하기</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json" style="display:none;">
   </div>
+</div>
 
-  <div class="field" id="birthField">
-    <fieldset>
-      <legend class="legend">생년월일</legend>
-      <div class="segmented" role="radiogroup" aria-label="달력 기준">
-        <label><input type="radio" name="cal" value="solar" checked><span>양력</span></label>
-        <label><input type="radio" name="cal" value="lunar"><span>음력</span></label>
-      </div>
-      <div class="row">
-        <select id="year" class="yr" aria-label="태어난 해"></select>
-        <select id="month" aria-label="태어난 달"></select>
-        <select id="day" aria-label="태어난 날"></select>
-      </div>
-      <div id="leapWrap">
-        <label class="check"><input type="checkbox" id="leap"><span>윤달에 태어났어요</span></label>
-      </div>
-      <p class="error" id="birthError">태어난 해·달·날을 모두 골라주세요.</p>
-    </fieldset>
-  </div>
+<script>
+/* ══════════ 문구 관리 + 관리자 모드 ══════════ */
+(function(){
+'use strict';
 
-  <div class="field" id="hourField">
-    <label for="hour">태어난 시간 <span class="hint">(십이시진)</span></label>
-    <select id="hour"></select>
-    <label class="check" style="margin-top:11px;">
-      <input type="checkbox" id="unknownHour"><span>시간을 몰라요</span>
-    </label>
-    <p class="note">시간을 모르면 시주 없이 세 기둥으로 봐요.</p>
-  </div>
+var PASSWORD = '1234';          // 소스에 그대로 노출됩니다. 실서비스에서는 서버 인증으로 바꾸세요.
+var STORE_KEY = 'nekidung.content.v1';
 
-  <button class="submit" id="submit">사주 세우기</button>
+var DEFAULTS = {
+  brand:'네기둥',
+  heroTitle:'네 기둥을 세워요',
+  heroSub:'태어난 해·달·날·시간을 적으면\n사주팔자 여덟 글자가 만들어져요.',
+  labelName:'이름',
+  placeholderName:'이름을 적어주세요',
+  labelBirth:'생년월일',
+  labelSolar:'양력',
+  labelLunar:'음력',
+  labelLeap:'윤달에 태어났어요',
+  labelHour:'태어난 시간',
+  hintHour:'(십이시진)',
+  labelUnknownHour:'시간을 몰라요',
+  noteHour:'시간을 모르면 시주 없이 세 기둥으로 봐요.',
+  btnSubmit:'사주 세우기',
+  errName:'이름을 적어주세요.',
+  errBirth:'태어난 해·달·날을 모두 골라주세요.',
+  resultSuffix:'님의 사주',
+  labelIlgan:'일간 (나를 나타내는 글자)',
+  labelAnimal:'띠',
+  labelTerm:'월령 (태어난 절기)',
+  labelOh:'오행 분포',
+  ohNotePrefix:'여덟 글자 중 {n}자 기준.',
+  btnAgain:'다시 입력하기',
+  footer1:'연주는 입춘, 월주는 12절기를 기준으로 바뀝니다. 시간은 동경 135도 기준 30분 보정을 적용했어요.',
+  footer2:'절기와 삭 시각은 천문 계산으로 구합니다. 자정 무렵에 걸친 절입일은 한국천문연구원 만세력과 하루 차이가 날 수 있어요.'
+};
 
-  <div class="result" id="result" role="status">
-    <h2>네 기둥이 세워졌어요</h2>
-    <p id="resultText"></p>
-    <button class="again" id="again">다시 입력하기</button>
-  </div>
-</main>
+var GROUPS = [
+  ['첫 화면', ['brand','heroTitle','heroSub']],
+  ['입력 폼', ['labelName','placeholderName','labelBirth','labelSolar','labelLunar','labelLeap',
+              'labelHour','hintHour','labelUnknownHour','noteHour','btnSubmit']],
+  ['안내 문구', ['errName','errBirth']],
+  ['결과 화면', ['resultSuffix','labelIlgan','labelAnimal','labelTerm','labelOh','ohNotePrefix','btnAgain']],
+  ['맨 아래', ['footer1','footer2']]
+];
+var NAMES = {
+  brand:'사이트 이름', heroTitle:'큰 제목', heroSub:'설명 (줄바꿈 가능)',
+  labelName:'이름 라벨', placeholderName:'이름 입력칸 안내', labelBirth:'생년월일 라벨',
+  labelSolar:'양력 버튼', labelLunar:'음력 버튼', labelLeap:'윤달 체크박스',
+  labelHour:'시간 라벨', hintHour:'시간 라벨 옆 작은 글씨', labelUnknownHour:'시간 모름 체크박스',
+  noteHour:'시간 안내문', btnSubmit:'메인 버튼', errName:'이름 미입력 안내', errBirth:'생일 미입력 안내',
+  resultSuffix:'결과 제목 뒷말 (이름 뒤에 붙어요)', labelIlgan:'일간 항목명', labelAnimal:'띠 항목명',
+  labelTerm:'월령 항목명', labelOh:'오행 소제목', ohNotePrefix:'오행 설명 앞부분 ({n}은 글자 수)',
+  btnAgain:'다시 입력 버튼', footer1:'하단 문구 1', footer2:'하단 문구 2'
+};
+
+var $ = function(id){ return document.getElementById(id); };
+var C = {};
+for(var k in DEFAULTS) C[k] = DEFAULTS[k];
+window.C = C;
+
+var esc = function(t){
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+};
+
+function apply(){
+  Array.prototype.forEach.call(document.querySelectorAll('[data-key]'), function(el){
+    var key = el.getAttribute('data-key');
+    if(!(key in C)) return;
+    if(el.hasAttribute('data-multiline')) el.innerHTML = esc(C[key]).replace(/\n/g,'<br>');
+    else el.textContent = C[key];
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-key-attr]'), function(el){
+    var key = el.getAttribute('data-key-attr');
+    if(key in C) el.setAttribute('placeholder', C[key]);
+  });
+  document.title = C.brand + ' · 내 사주 세우기';
+}
+
+function merge(obj){
+  if(!obj || typeof obj !== 'object') return false;
+  for(var k in DEFAULTS) if(typeof obj[k] === 'string') C[k] = obj[k];
+  return true;
+}
+function readLocal(){
+  try{ var raw = window.localStorage.getItem(STORE_KEY); return raw ? JSON.parse(raw) : null; }
+  catch(e){ return null; }
+}
+function persist(){
+  var json = JSON.stringify(C), ok = false;
+  try{ window.localStorage.setItem(STORE_KEY, json); ok = true; }catch(e){}
+  try{
+    if(window.storage && window.storage.set){ window.storage.set(STORE_KEY, json); ok = true; }
+  }catch(e){}
+  return ok;
+}
+
+merge(readLocal());
+apply();
+try{
+  if(window.storage && window.storage.get){
+    window.storage.get(STORE_KEY).then(function(r){
+      if(r && r.value && merge(JSON.parse(r.value))) apply();
+    }).catch(function(){});
+  }
+}catch(e){}
+
+/* ── 관리자 화면 ── */
+function buildEditors(){
+  $('editors').innerHTML = GROUPS.map(function(g){
+    return '<div class="grp"><h4>' + g[0] + '</h4>' + g[1].map(function(key){
+      var rows = C[key].length > 46 || C[key].indexOf('\n') > -1 ? 3 : 1;
+      return '<div class="ed"><label for="ed_'+key+'">'+(NAMES[key]||key)+'</label>'+
+             '<textarea id="ed_'+key+'" rows="'+rows+'" data-edit="'+key+'">'+esc(C[key])+'</textarea></div>';
+    }).join('') + '</div>';
+  }).join('');
+}
+function toast(msg, bad){
+  var t = $('panelMsg');
+  t.textContent = msg;
+  t.classList.toggle('bad', !!bad);
+  t.classList.add('show');
+  window.clearTimeout(t._h);
+  t._h = window.setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+function openMask(){ $('mask').classList.add('show'); }
+function closeMask(){
+  $('mask').classList.remove('show');
+  $('panel').style.display = 'none';
+  $('gate').style.display = '';
+  $('pw').value = '';
+  $('gateMsg').classList.remove('show');
+}
+
+$('adminOpen').addEventListener('click', function(){ openMask(); $('pw').focus(); });
+$('gateCancel').addEventListener('click', closeMask);
+$('gateOk').addEventListener('click', function(){
+  if($('pw').value === PASSWORD){
+    $('gate').style.display = 'none';
+    buildEditors();
+    $('panel').style.display = '';
+    $('panel').scrollIntoView({block:'start'});
+  } else {
+    $('gateMsg').classList.add('show');
+    $('pw').select();
+  }
+});
+$('pw').addEventListener('keydown', function(e){ if(e.key === 'Enter') $('gateOk').click(); });
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape' && $('mask').classList.contains('show')) closeMask();
+});
+$('mask').addEventListener('mousedown', function(e){ if(e.target === $('mask')) closeMask(); });
+
+$('btnSave').addEventListener('click', function(){
+  Array.prototype.forEach.call(document.querySelectorAll('[data-edit]'), function(el){
+    C[el.getAttribute('data-edit')] = el.value;
+  });
+  apply();
+  var saved = persist();
+  toast(saved ? '저장했어요. 화면에 바로 반영됐어요.'
+              : '화면에는 반영했지만 이 브라우저에 저장되지 않았어요. 내보내기로 백업해 주세요.', !saved);
+});
+$('btnReset').addEventListener('click', function(){
+  for(var k in DEFAULTS) C[k] = DEFAULTS[k];
+  apply(); persist(); buildEditors();
+  toast('기본 문구로 되돌렸어요.');
+});
+$('btnExport').addEventListener('click', function(){
+  var blob = new Blob([JSON.stringify(C, null, 2)], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'nekidung-content.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('JSON 파일로 내려받았어요.');
+});
+$('btnImport').addEventListener('click', function(){ $('importFile').click(); });
+$('importFile').addEventListener('change', function(){
+  var file = this.files && this.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(){
+    try{
+      if(!merge(JSON.parse(reader.result))) throw new Error('형식 오류');
+      apply(); persist(); buildEditors();
+      toast('불러왔어요.');
+    }catch(e){
+      toast('JSON 형식이 아니거나 내용이 비어 있어요.', true);
+    }
+  };
+  reader.readAsText(file);
+  this.value = '';
+});
+$('btnClose').addEventListener('click', closeMask);
+})();
+</script>
 
 <script>
 (function(){
-  var HOURS = [
-    ['자','자시','23:30 ~ 01:29','쥐'],
-    ['축','축시','01:30 ~ 03:29','소'],
-    ['인','인시','03:30 ~ 05:29','호랑이'],
-    ['묘','묘시','05:30 ~ 07:29','토끼'],
-    ['진','진시','07:30 ~ 09:29','용'],
-    ['사','사시','09:30 ~ 11:29','뱀'],
-    ['오','오시','11:30 ~ 13:29','말'],
-    ['미','미시','13:30 ~ 15:29','양'],
-    ['신','신시','15:30 ~ 17:29','원숭이'],
-    ['유','유시','17:30 ~ 19:29','닭'],
-    ['술','술시','19:30 ~ 21:29','개'],
-    ['해','해시','21:30 ~ 23:29','돼지']
-  ];
+'use strict';
+var C = window.C;
+/* ══════════ 만세력 계산 ══════════ */
+var RAD = Math.PI/180, sin = function(d){ return Math.sin(d*RAD); };
 
-  var $ = function(id){ return document.getElementById(id); };
-  var yearSel = $('year'), monthSel = $('month'), daySel = $('day'), hourSel = $('hour');
+function toJDN(y,m,d){
+  if(m<=2){ y-=1; m+=12; }
+  var A=Math.floor(y/100), B=2-A+Math.floor(A/4);
+  return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524;
+}
+function fromJDN(jdn){
+  var a=jdn+32044, b=Math.floor((4*a+3)/146097), c=a-Math.floor(146097*b/4),
+      dd=Math.floor((4*c+3)/1461), e=c-Math.floor(1461*dd/4), mm=Math.floor((5*e+2)/153);
+  return { d:e-Math.floor((153*mm+2)/5)+1, m:mm+3-12*Math.floor(mm/10), y:100*b+dd-4800+Math.floor(mm/10) };
+}
+var toKst = function(jde){ return Math.floor(jde+9/24+0.5); };
 
-  function option(v, t){ var o = document.createElement('option'); o.value = v; o.textContent = t; return o; }
+function solarLongitude(jde){
+  var T=(jde-2451545)/36525,
+      L0=280.46646+36000.76983*T+0.0003032*T*T,
+      M=357.52911+35999.05029*T-0.0001537*T*T,
+      C=(1.914602-0.004817*T-0.000014*T*T)*sin(M)+(0.019993-0.000101*T)*sin(2*M)+0.000289*sin(3*M),
+      O=125.04-1934.136*T;
+  return ((L0+C-0.00569-0.00478*sin(O))%360+360)%360;
+}
+function solarTerm(estYear, angle){
+  var jde = toJDN(estYear,3,20) + (angle/360)*365.2422;
+  for(var i=0;i<30;i++){
+    var diff = ((solarLongitude(jde)-angle+180)%360+360)%360-180;
+    if(Math.abs(diff)<1e-7) break;
+    jde -= diff*(365.2422/360);
+  }
+  return jde;
+}
+function termJDN(y, angle){ return toKst(solarTerm(angle>=285 ? y-1 : y, angle)); }
 
-  // 연 / 월 / 시 채우기
-  yearSel.appendChild(option('', '연도'));
-  var thisYear = new Date().getFullYear();
-  for (var y = thisYear; y >= 1930; y--) yearSel.appendChild(option(y, y + '년'));
-
-  monthSel.appendChild(option('', '월'));
-  for (var m = 1; m <= 12; m++) monthSel.appendChild(option(m, m + '월'));
-
-  hourSel.appendChild(option('', '시간을 골라주세요'));
-  HOURS.forEach(function(h, i){
-    hourSel.appendChild(option(i, h[1] + ' · ' + h[2] + ' · ' + h[3]));
+function newMoon(k){
+  var T=k/1236.85, T2=T*T, T3=T2*T, T4=T3*T;
+  var jde = 2451550.09766+29.530588861*k+0.00015437*T2-0.000000150*T3+0.00000000073*T4;
+  var E=1-0.002516*T-0.0000074*T2,
+      M=2.5534+29.10535670*k-0.0000014*T2-0.00000011*T3,
+      Mp=201.5643+385.81693528*k+0.0107582*T2+0.00001238*T3-0.000000058*T4,
+      F=160.7108+390.67050284*k-0.0016118*T2-0.00000227*T3+0.000000011*T4,
+      Om=124.7746-1.56375588*k+0.0020672*T2+0.00000215*T3;
+  jde += -0.40720*sin(Mp)+0.17241*E*sin(M)+0.01608*sin(2*Mp)+0.01039*sin(2*F)
+       + 0.00739*E*sin(Mp-M)-0.00514*E*sin(Mp+M)+0.00208*E*E*sin(2*M)
+       - 0.00111*sin(Mp-2*F)-0.00057*sin(Mp+2*F)+0.00056*E*sin(2*Mp+M)
+       - 0.00042*sin(3*Mp)+0.00042*E*sin(M+2*F)+0.00038*E*sin(M-2*F)
+       - 0.00024*E*sin(2*Mp-M)-0.00017*sin(Om)-0.00007*sin(Mp+2*M)
+       + 0.00004*sin(2*Mp-2*F)+0.00004*sin(3*M)+0.00003*sin(Mp+M-2*F)
+       + 0.00003*sin(2*Mp+2*F)-0.00003*sin(Mp+M+2*F)+0.00003*sin(Mp-M+2*F)
+       - 0.00002*sin(Mp-M-2*F)-0.00002*sin(3*Mp+M)+0.00002*sin(4*Mp);
+  var A=[[299.77,0.107408,0.000325,-0.009173],[251.88,0.016321,0.000165,0],[251.83,26.651886,0.000164,0],
+         [349.42,36.412478,0.000126,0],[84.66,18.206239,0.000110,0],[141.74,53.303771,0.000062,0],
+         [207.14,2.453732,0.000060,0],[154.84,7.306860,0.000056,0],[34.52,27.261239,0.000047,0],
+         [207.19,0.121824,0.000042,0],[291.34,1.844379,0.000040,0],[161.72,24.198154,0.000037,0],
+         [239.56,25.513099,0.000035,0],[331.55,3.592518,0.000023,0]];
+  for(var i=0;i<A.length;i++) jde += A[i][2]*sin(A[i][0]+A[i][1]*k+A[i][3]*T2);
+  return jde;
+}
+function newMoonBefore(jdn){
+  var k = Math.floor((jdn-2451550.09766)/29.530588861)+2;
+  while(toKst(newMoon(k))>jdn) k--;
+  return { k:k, jdn:toKst(newMoon(k)) };
+}
+function lunarMonths(gYear){
+  var start=newMoonBefore(termJDN(gYear-1,270)), end=newMoonBefore(termJDN(gYear,270));
+  var count=end.k-start.k, months=[], i;
+  for(i=0;i<=count;i++) months.push({ k:start.k+i, jdn:toKst(newMoon(start.k+i)) });
+  var zq=[], yy, a;
+  for(yy=gYear-1; yy<=gYear+1; yy++) for(a=0;a<360;a+=30) zq.push(termJDN(yy,a));
+  var has = months.map(function(mo,idx){
+    if(idx===months.length-1) return true;
+    var next=months[idx+1].jdn;
+    return zq.some(function(t){ return t>=mo.jdn && t<next; });
   });
-
-  function isLunar(){
-    return document.querySelector('input[name="cal"]:checked').value === 'lunar';
+  var leapIndex=-1;
+  if(count===13){
+    for(i=1;i<months.length;i++) if(!has[i]){ leapIndex=i; break; }
+    if(leapIndex===-1) leapIndex=1;
   }
-
-  function daysInMonth(){
-    var y = parseInt(yearSel.value, 10), m = parseInt(monthSel.value, 10);
-    if (!m) return 31;
-    if (isLunar()) return 30;
-    if (m === 2) return (y && ((y % 4 === 0 && y % 100 !== 0) || y % 400 === 0)) ? 29 : 28;
-    return [4,6,9,11].indexOf(m) > -1 ? 30 : 31;
-  }
-
-  function buildDays(){
-    var keep = daySel.value, max = daysInMonth();
-    daySel.innerHTML = '';
-    daySel.appendChild(option('', '일'));
-    for (var d = 1; d <= max; d++) daySel.appendChild(option(d, d + '일'));
-    if (keep && parseInt(keep, 10) <= max) daySel.value = keep;
-  }
-  buildDays();
-
-  // 기둥 갱신
-  function setPillar(name, filled, text){
-    var el = document.querySelector('.pillar[data-p="' + name + '"]');
-    el.classList.toggle('on', !!filled);
-    $('pv' + name.charAt(0).toUpperCase() + name.slice(1)).textContent = text;
-  }
-
-  function refresh(){
-    setPillar('year',  yearSel.value,  yearSel.value  ? yearSel.value + '년' : '해');
-    setPillar('month', monthSel.value, monthSel.value ? monthSel.value + '월' : '달');
-    setPillar('day',   daySel.value,   daySel.value   ? daySel.value + '일'  : '날');
-
-    if ($('unknownHour').checked) setPillar('hour', false, '모름');
-    else if (hourSel.value !== '') setPillar('hour', true, HOURS[hourSel.value][0] + '시');
-    else setPillar('hour', false, '시간');
-  }
-
-  [yearSel, monthSel].forEach(function(el){
-    el.addEventListener('change', function(){ buildDays(); refresh(); });
-  });
-  daySel.addEventListener('change', refresh);
-  hourSel.addEventListener('change', refresh);
-
-  document.querySelectorAll('input[name="cal"]').forEach(function(r){
-    r.addEventListener('change', function(){
-      $('leapWrap').classList.toggle('show', isLunar());
-      if (!isLunar()) $('leap').checked = false;
-      buildDays();
-      refresh();
-    });
-  });
-
-  $('unknownHour').addEventListener('change', function(){
-    hourSel.disabled = this.checked;
-    hourSel.style.opacity = this.checked ? .45 : 1;
-    if (this.checked) hourSel.value = '';
-    refresh();
-  });
-
-  // 제출
-  function flag(fieldId, errorId, bad){
-    $(fieldId).classList.toggle('invalid', bad);
-    $(errorId).classList.toggle('show', bad);
-  }
-
-  $('submit').addEventListener('click', function(){
-    var name = $('name').value.trim();
-    var noName = !name;
-    var noDate = !yearSel.value || !monthSel.value || !daySel.value;
-
-    flag('nameField', 'nameError', noName);
-    flag('birthField', 'birthError', noDate);
-
-    if (noName || noDate){
-      $('result').classList.remove('show');
-      $(noName ? 'name' : 'year').focus();
-      return;
+  var num=11, ly=gYear-1;
+  for(i=0;i<months.length;i++){
+    if(i===leapIndex){
+      months[i].month=months[i-1].month; months[i].lyear=months[i-1].lyear; months[i].leap=true;
+    } else {
+      if(num===1) ly+=1;
+      months[i].month=num; months[i].lyear=ly; months[i].leap=false;
+      num=(num%12)+1;
     }
+  }
+  return months;
+}
+function lunarToJDN(ly,lm,ld,isLeap){
+  for(var g=ly; g<=ly+1; g++){
+    var months=lunarMonths(g);
+    for(var i=0;i<months.length;i++){
+      var mo=months[i];
+      if(mo.month!==lm || !!mo.leap!==!!isLeap || mo.lyear!==ly) continue;
+      var next = months[i+1] ? months[i+1].jdn : mo.jdn+30;
+      if(ld > next-mo.jdn) return null;
+      return mo.jdn+ld-1;
+    }
+  }
+  return null;
+}
 
-    var cal = isLunar() ? ($('leap').checked ? '음력 윤달' : '음력') : '양력';
-    var when = $('unknownHour').checked
-      ? '시간 모름'
-      : (hourSel.value !== '' ? HOURS[hourSel.value][1] + '(' + HOURS[hourSel.value][2] + ')' : '시간 모름');
+var GAN=['갑','을','병','정','무','기','경','신','임','계'];
+var JI=['자','축','인','묘','진','사','오','미','신','유','술','해'];
+var GAN_H=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+var JI_H=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+var GAN_OH=['목','목','화','화','토','토','금','금','수','수'];
+var JI_OH=['수','토','목','목','토','화','화','토','금','금','토','수'];
+var ANIMAL=['쥐','소','호랑이','토끼','용','뱀','말','양','원숭이','닭','개','돼지'];
+var TERM_ANGLES=[315,345,15,45,75,105,135,165,195,225,255,285];
+var TERM_NAMES=['입춘','경칩','청명','입하','망종','소서','입추','백로','한로','입동','대설','소한'];
+var MONTH_JI=[2,3,4,5,6,7,8,9,10,11,0,1];
 
-    $('resultText').textContent =
-      name + '님 · ' + cal + ' ' + yearSel.value + '년 ' + monthSel.value + '월 ' + daySel.value + '일 · ' + when;
-    $('result').classList.add('show');
-    $('result').scrollIntoView({ behavior:'smooth', block:'nearest' });
+function saju(y,m,d,hourIdx){
+  var jdn=toJDN(y,m,d);
+  var iy = (jdn < termJDN(y,315)) ? y-1 : y;
+  var yearIdx = ((iy-4)%60+60)%60;
+  var terms = TERM_ANGLES.map(function(a,i){ return termJDN(i===11 ? iy+1 : iy, a); });
+  var mi=0;
+  for(var i=11;i>=0;i--){ if(jdn>=terms[i]){ mi=i; break; } }
+  var yearGan=yearIdx%10;
+  var dayIdx=(((jdn-toJDN(1900,1,1)+10)%60)+60)%60;
+  var dayGan=dayIdx%10;
+  var r = {
+    year:{gan:yearGan, ji:yearIdx%12},
+    month:{gan:(yearGan*2+2+mi)%10, ji:MONTH_JI[mi]},
+    day:{gan:dayGan, ji:dayIdx%12},
+    hour:(hourIdx===null||hourIdx===undefined) ? null : {gan:(dayGan*2+hourIdx)%10, ji:hourIdx},
+    term:TERM_NAMES[mi]
+  };
+  return r;
+}
+
+/* ══════════ 화면 ══════════ */
+var HOURS=[['자','자시','23:30~01:29'],['축','축시','01:30~03:29'],['인','인시','03:30~05:29'],
+  ['묘','묘시','05:30~07:29'],['진','진시','07:30~09:29'],['사','사시','09:30~11:29'],
+  ['오','오시','11:30~13:29'],['미','미시','13:30~15:29'],['신','신시','15:30~17:29'],
+  ['유','유시','17:30~19:29'],['술','술시','19:30~21:29'],['해','해시','21:30~23:29']];
+var OH=['목','화','토','금','수'];
+var OH_HEX={'목':'#CCEBD8','화':'#FFD3D8','토':'#FFE9A8','금':'#E0DCEC','수':'#CFDDF5'};
+
+var $=function(id){ return document.getElementById(id); };
+var yearSel=$('year'), monthSel=$('month'), daySel=$('day'), hourSel=$('hour');
+function option(v,t){ var o=document.createElement('option'); o.value=v; o.textContent=t; return o; }
+
+yearSel.appendChild(option('','연도'));
+for(var y=new Date().getFullYear(); y>=1900; y--) yearSel.appendChild(option(y,y+'년'));
+monthSel.appendChild(option('','월'));
+for(var m=1;m<=12;m++) monthSel.appendChild(option(m,m+'월'));
+hourSel.appendChild(option('','시간을 골라주세요'));
+HOURS.forEach(function(h,i){ hourSel.appendChild(option(i, h[1]+' · '+h[2])); });
+
+function isLunar(){ return document.querySelector('input[name="cal"]:checked').value==='lunar'; }
+function maxDay(){
+  var yv=parseInt(yearSel.value,10), mv=parseInt(monthSel.value,10);
+  if(!mv) return 31;
+  if(isLunar()) return 30;
+  if(mv===2) return (yv && ((yv%4===0 && yv%100!==0)||yv%400===0)) ? 29 : 28;
+  return [4,6,9,11].indexOf(mv)>-1 ? 30 : 31;
+}
+function buildDays(){
+  var keep=daySel.value, mx=maxDay();
+  daySel.innerHTML=''; daySel.appendChild(option('','일'));
+  for(var d=1; d<=mx; d++) daySel.appendChild(option(d,d+'일'));
+  if(keep && parseInt(keep,10)<=mx) daySel.value=keep;
+}
+buildDays();
+
+function setPillar(name, filled, text){
+  document.querySelector('.pillar[data-p="'+name+'"]').classList.toggle('on', !!filled);
+  $('pv'+name.charAt(0).toUpperCase()+name.slice(1)).textContent=text;
+}
+function refresh(){
+  setPillar('year', yearSel.value, yearSel.value ? yearSel.value+'년' : '해');
+  setPillar('month', monthSel.value, monthSel.value ? monthSel.value+'월' : '달');
+  setPillar('day', daySel.value, daySel.value ? daySel.value+'일' : '날');
+  if($('unknownHour').checked) setPillar('hour', false, '모름');
+  else if(hourSel.value!=='') setPillar('hour', true, HOURS[hourSel.value][0]+'시');
+  else setPillar('hour', false, '시간');
+}
+[yearSel,monthSel].forEach(function(el){ el.addEventListener('change', function(){ buildDays(); refresh(); }); });
+daySel.addEventListener('change', refresh);
+hourSel.addEventListener('change', refresh);
+Array.prototype.forEach.call(document.querySelectorAll('input[name="cal"]'), function(r){
+  r.addEventListener('change', function(){
+    $('leapWrap').classList.toggle('show', isLunar());
+    if(!isLunar()) $('leap').checked=false;
+    buildDays(); refresh();
   });
-
-  $('again').addEventListener('click', function(){
-    $('result').classList.remove('show');
-    $('name').focus();
-  });
-
+});
+$('unknownHour').addEventListener('change', function(){
+  hourSel.disabled=this.checked;
+  hourSel.style.opacity=this.checked?.45:1;
+  if(this.checked) hourSel.value='';
   refresh();
+});
+
+function flag(fieldId, errId, bad, msg){
+  $(fieldId).classList.toggle('invalid', bad);
+  if(msg) $(errId).textContent=msg;
+  $(errId).classList.toggle('show', bad);
+}
+
+function cellHTML(p, cls){
+  if(!p) return '<div class="cell '+cls+' empty"><span class="han">·</span><span class="kor">모름</span></div>';
+  var oh = cls==='gan' ? GAN_OH[p.gan] : JI_OH[p.ji];
+  var han = cls==='gan' ? GAN_H[p.gan] : JI_H[p.ji];
+  var kor = cls==='gan' ? GAN[p.gan] : JI[p.ji];
+  return '<div class="cell '+cls+' oh-'+oh+'"><span class="han">'+han+'</span><span class="kor">'+kor+' · '+oh+'</span></div>';
+}
+
+$('submit').addEventListener('click', function(){
+  var name=$('name').value.trim();
+  var noName=!name, noDate=(!yearSel.value||!monthSel.value||!daySel.value);
+  flag('nameField','nameError',noName,C.errName);
+  flag('birthField','birthError',noDate,C.errBirth);
+  if(noName||noDate){ $('result').classList.remove('show'); $(noName?'name':'year').focus(); return; }
+
+  var Y=+yearSel.value, M=+monthSel.value, D=+daySel.value, lunar=isLunar(), leap=$('leap').checked;
+  var jdn;
+  if(lunar){
+    jdn = lunarToJDN(Y,M,D,leap);
+    if(jdn===null){
+      flag('birthField','birthError',true, leap ? Y+'년에는 윤'+M+'월이 없어요. 평달인지 확인해 주세요.'
+                                                : '음력 '+Y+'년 '+M+'월에는 '+D+'일이 없어요.');
+      $('result').classList.remove('show'); return;
+    }
+  } else {
+    jdn = toJDN(Y,M,D);
+  }
+  var g = fromJDN(jdn);
+  var hi = $('unknownHour').checked || hourSel.value==='' ? null : +hourSel.value;
+  var s = saju(g.y, g.m, g.d, hi);
+
+  // 헤더
+  var calText = lunar ? ('음력 '+(leap?'윤 ':'')+Y+'년 '+M+'월 '+D+'일 (양력 '+g.y+'.'+g.m+'.'+g.d+')')
+                      : ('양력 '+g.y+'년 '+g.m+'월 '+g.d+'일');
+  var hourText = hi===null ? '시간 모름' : HOURS[hi][1]+' '+HOURS[hi][2];
+  $('rTitle').textContent = name + C.resultSuffix;
+  $('rSub').textContent = calText+' · '+hourText;
+
+  // 팔자 표
+  var cols=[['년주',s.year],['월주',s.month],['일주',s.day],['시주',s.hour]];
+  $('chart').innerHTML = cols.map(function(c){
+    return '<div class="col"><div class="cap">'+c[0]+'</div><div class="stack">'+
+           cellHTML(c[1],'gan')+cellHTML(c[1],'ji')+'</div></div>';
+  }).join('');
+
+  // 요약
+  $('fIlgan').textContent = GAN_H[s.day.gan]+' '+GAN[s.day.gan]+' · '+GAN_OH[s.day.gan];
+  $('fAnimal').textContent = ANIMAL[s.year.ji]+'띠';
+  $('fTerm').textContent = s.term+' 이후';
+
+  // 오행
+  var cnt={목:0,화:0,토:0,금:0,수:0}, total=0;
+  [s.year,s.month,s.day,s.hour].forEach(function(p){
+    if(!p) return;
+    cnt[GAN_OH[p.gan]]++; cnt[JI_OH[p.ji]]++; total+=2;
+  });
+  var mx=Math.max.apply(null,OH.map(function(k){ return cnt[k]; }));
+  $('ohbars').innerHTML = OH.map(function(k){
+    var h = cnt[k]===0 ? 0 : Math.round(cnt[k]/mx*100);
+    return '<div class="ohbar"><div class="bar"><div class="fill" style="height:'+h+'%;background:'+OH_HEX[k]+'"></div></div>'+
+           '<div class="lb">'+k+' <b>'+cnt[k]+'</b></div></div>';
+  }).join('');
+  var most=OH.filter(function(k){ return cnt[k]===mx; });
+  var none=OH.filter(function(k){ return cnt[k]===0; });
+  $('ohNote').textContent = C.ohNotePrefix.replace('{n}', total)+' '+most.join('·')+'이(가) 가장 많고'+
+                            (none.length ? ', '+none.join('·')+'은(는) 없어요.' : ', 다섯 기운이 모두 들어 있어요.');
+
+  $('result').classList.add('show');
+  $('result').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
+$('again').addEventListener('click', function(){
+  $('result').classList.remove('show');
+  $('formCard').scrollIntoView({behavior:'smooth', block:'start'});
+  $('name').focus();
+});
+
+refresh();
 })();
 </script>
 </body>
 </html>
+
