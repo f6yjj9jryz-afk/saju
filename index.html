@@ -179,11 +179,20 @@
   }
   .box h3{font-family:'Jua',sans-serif; font-weight:400; font-size:20px; margin:0 0 6px;}
   .box .sub{margin:0 0 18px; font-size:13.5px; color:var(--ink-soft);}
-  .box input[type="password"]{
+  .box input[type="password"],.box input[type="email"]{
     width:100%; font-family:inherit; font-size:15.5px; color:var(--ink);
     background:#FBFAFF; border:2px solid var(--line); border-radius:16px; padding:12px 14px;
   }
-  .box input[type="password"]:focus{outline:none; border-color:var(--lilac-deep); background:#fff;}
+  .box input[type="email"]{margin-bottom:8px;}
+  .box input[type="password"]:focus,.box input[type="email"]:focus{outline:none; border-color:var(--lilac-deep); background:#fff;}
+  .who{color:var(--lilac-deep);}
+  .reclist{margin-top:14px; border-top:2px dashed var(--line); padding-top:6px; max-height:250px; overflow-y:auto;}
+  .recitem{padding:9px 2px; border-bottom:1px dashed var(--line);}
+  .recitem:last-child{border-bottom:0;}
+  .rec1{display:flex; justify-content:space-between; gap:10px; font-size:14px;}
+  .rec1 span{color:var(--ink-soft); font-size:12.5px; flex:none;}
+  .rec2{font-size:13px; color:var(--ink-soft); margin-top:2px;}
+  .recempty{margin:14px 0 0; font-size:13.5px; color:var(--ink-soft);}
   .btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:16px;}
   .btn{
     flex:1 1 auto; font-family:inherit; font-size:14.5px; border:0; border-radius:999px;
@@ -307,10 +316,11 @@
 
 <div class="mask" id="mask">
   <div class="box" id="gate">
-    <h3>관리자 모드</h3>
-    <p class="sub">비밀번호를 입력하면 홈페이지 문구를 바꿀 수 있어요.</p>
+    <h3>관리자 로그인</h3>
+    <p class="sub">Firebase에 등록한 관리자 계정으로 로그인하면 홈페이지 문구를 바꿀 수 있어요.</p>
+    <input type="email" id="adminEmail" placeholder="관리자 이메일" autocomplete="username">
     <input type="password" id="pw" placeholder="비밀번호" autocomplete="current-password">
-    <div class="toast bad" id="gateMsg">비밀번호가 맞지 않아요.</div>
+    <div class="toast bad" id="gateMsg"></div>
     <div class="btns">
       <button class="btn" id="gateCancel">닫기</button>
       <button class="btn primary" id="gateOk">들어가기</button>
@@ -319,7 +329,7 @@
 
   <div class="box" id="panel" style="display:none;">
     <h3>문구 편집</h3>
-    <p class="sub">고친 내용은 저장을 눌러야 반영돼요. 줄바꿈은 그대로 표시됩니다.</p>
+    <p class="sub">저장하면 모든 방문자 화면에 함께 반영돼요. 줄바꿈은 그대로 표시됩니다. <span class="who" id="whoami"></span></p>
     <div id="editors"></div>
     <div class="toast" id="panelMsg"></div>
     <div class="btns">
@@ -327,6 +337,11 @@
       <button class="btn" id="btnExport">내보내기</button>
       <button class="btn" id="btnImport">불러오기</button>
     </div>
+    <div class="btns">
+      <button class="btn" id="btnRecords">최근 기록</button>
+      <button class="btn" id="btnLogout">로그아웃</button>
+    </div>
+    <div id="recWrap"></div>
     <div class="btns">
       <button class="btn" id="btnClose">닫기</button>
       <button class="btn primary" id="btnSave">저장하기</button>
@@ -336,12 +351,29 @@
 </div>
 
 <script>
-/* ══════════ 문구 관리 + 관리자 모드 ══════════ */
+/* ══════════ Firebase 연동 + 문구 관리 + 관리자 모드 ══════════ */
 (function(){
 'use strict';
 
-var PASSWORD = '1234';          // 소스에 그대로 노출됩니다. 실서비스에서는 서버 인증으로 바꾸세요.
-var STORE_KEY = 'nekidung.content.v1';
+/* ── 설정 ───────────────────────────────────────
+   Firestore(무료 Spark 요금제)만 사용합니다.
+   Cloud Storage(파일 업로드)는 쓰지 않으므로 요금제를 올릴 필요가 없어요. */
+var FIREBASE_CONFIG = {
+  apiKey: "AIzaSyADDWB53bKAA-AAQo3GvXKEN4fwRfo7jv0",
+  authDomain: "singisaju.firebaseapp.com",
+  projectId: "singisaju",
+  storageBucket: "singisaju.firebasestorage.app",
+  messagingSenderId: "948652324224",
+  appId: "1:948652324224:web:fc0dc96209cab7f353fd65",
+  measurementId: "G-FKWJF3KRFK"
+};
+
+var SDK          = 'https://www.gstatic.com/firebasejs/12.12.1/';
+var CONTENT_COL  = 'site';        // 문구 문서 위치: site/content
+var CONTENT_DOC  = 'content';
+var RECORDS_COL  = 'records';     // 방문자 사주 기록
+var SAVE_RECORDS = true;          // 기록을 남기고 싶지 않으면 false
+var STORE_KEY    = 'nekidung.content.v1';   // 오프라인용 로컬 캐시
 
 var DEFAULTS = {
   brand:'네기둥',
@@ -394,6 +426,7 @@ var $ = function(id){ return document.getElementById(id); };
 var C = {};
 for(var k in DEFAULTS) C[k] = DEFAULTS[k];
 window.C = C;
+window.NK = window.NK || {};
 
 var esc = function(t){
   return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -415,33 +448,99 @@ function apply(){
 
 function merge(obj){
   if(!obj || typeof obj !== 'object') return false;
-  for(var k in DEFAULTS) if(typeof obj[k] === 'string') C[k] = obj[k];
-  return true;
+  var changed = false;
+  for(var k in DEFAULTS) if(typeof obj[k] === 'string' && obj[k] !== C[k]){ C[k] = obj[k]; changed = true; }
+  return changed;
 }
 function readLocal(){
   try{ var raw = window.localStorage.getItem(STORE_KEY); return raw ? JSON.parse(raw) : null; }
   catch(e){ return null; }
 }
-function persist(){
-  var json = JSON.stringify(C), ok = false;
-  try{ window.localStorage.setItem(STORE_KEY, json); ok = true; }catch(e){}
-  try{
-    if(window.storage && window.storage.set){ window.storage.set(STORE_KEY, json); ok = true; }
-  }catch(e){}
-  return ok;
+function cacheLocal(){
+  try{ window.localStorage.setItem(STORE_KEY, JSON.stringify(C)); return true; }catch(e){ return false; }
 }
 
+/* 1) 네트워크가 없어도 화면은 먼저 뜨도록 로컬 캐시 → 기본값 순으로 그린다 */
 merge(readLocal());
 apply();
-try{
-  if(window.storage && window.storage.get){
-    window.storage.get(STORE_KEY).then(function(r){
-      if(r && r.value && merge(JSON.parse(r.value))) apply();
-    }).catch(function(){});
-  }
-}catch(e){}
 
-/* ── 관리자 화면 ── */
+/* ── Firebase 연결 ──────────────────────────────
+   CDN 모듈을 동적 import 로 불러온다. 실패해도(오프라인·file:// 등)
+   페이지 자체는 그대로 동작하고, 문구는 로컬 캐시로 표시된다. */
+var FB = { ready:false, err:null, user:null };
+
+var fbReady = Promise.all([
+  import(SDK + 'firebase-app.js'),
+  import(SDK + 'firebase-firestore.js'),
+  import(SDK + 'firebase-auth.js')
+]).then(function(mods){
+  var appMod = mods[0];
+  FB.fs   = mods[1];
+  FB.au   = mods[2];
+  FB.app  = appMod.initializeApp(FIREBASE_CONFIG);
+  FB.db   = FB.fs.getFirestore(FB.app);
+  FB.auth = FB.au.getAuth(FB.app);
+  FB.contentRef = FB.fs.doc(FB.db, CONTENT_COL, CONTENT_DOC);
+  FB.ready = true;
+
+  FB.au.onAuthStateChanged(FB.auth, function(u){ FB.user = u; });
+  watchContent();
+  initAnalytics();
+  return FB;
+}).catch(function(e){
+  FB.err = e;
+  console.warn('[Firebase] 연결 실패 — 로컬 모드로 동작합니다.', e);
+  throw e;
+});
+
+function initAnalytics(){
+  import(SDK + 'firebase-analytics.js').then(function(an){
+    return an.isSupported().then(function(ok){
+      if(!ok) return;
+      FB.analytics = an.getAnalytics(FB.app);
+      FB.logEvent  = an.logEvent;
+    });
+  }).catch(function(){ /* 애널리틱스는 없어도 무방 */ });
+}
+
+/* 방문자 이벤트 기록 (결과 계산 스크립트에서 호출) */
+window.NK.track = function(name, params){
+  fbReady.then(function(){
+    if(FB.analytics && FB.logEvent) FB.logEvent(FB.analytics, name, params || {});
+  }).catch(function(){});
+};
+
+/* 2) Firestore 의 문구를 실시간으로 받아 화면에 반영 (문서 1개 = 읽기 1회) */
+function watchContent(){
+  FB.fs.onSnapshot(FB.contentRef, function(snap){
+    if(!snap.exists()) return;              // 아직 저장한 적 없으면 기본 문구 유지
+    if(merge(snap.data())){ apply(); cacheLocal(); }
+  }, function(err){
+    console.warn('[Firebase] 문구를 불러오지 못했습니다.', err);
+  });
+}
+
+function saveContent(){
+  cacheLocal();
+  if(!FB.ready)  return Promise.reject(new Error('offline'));
+  if(!FB.user)   return Promise.reject(new Error('unauthorized'));
+  var data = {};
+  for(var k in DEFAULTS) data[k] = C[k];
+  data.updatedAt = FB.fs.serverTimestamp();
+  data.updatedBy = FB.user.email || FB.user.uid;
+  return FB.fs.setDoc(FB.contentRef, data, { merge:true });
+}
+
+/* 3) 방문자 사주 기록 저장 — 규칙에서 생성만 허용, 조회는 관리자만 */
+window.NK.saveRecord = function(rec){
+  if(!SAVE_RECORDS) return;
+  fbReady.then(function(){
+    rec.createdAt = FB.fs.serverTimestamp();
+    return FB.fs.addDoc(FB.fs.collection(FB.db, RECORDS_COL), rec);
+  }).catch(function(e){ console.warn('[Firebase] 기록 저장 실패', e); });
+};
+
+/* ══════════ 관리자 화면 ══════════ */
 function buildEditors(){
   $('editors').innerHTML = GROUPS.map(function(g){
     return '<div class="grp"><h4>' + g[0] + '</h4>' + g[1].map(function(key){
@@ -457,7 +556,13 @@ function toast(msg, bad){
   t.classList.toggle('bad', !!bad);
   t.classList.add('show');
   window.clearTimeout(t._h);
-  t._h = window.setTimeout(function(){ t.classList.remove('show'); }, 2600);
+  t._h = window.setTimeout(function(){ t.classList.remove('show'); }, 3200);
+}
+function gateMsg(msg, bad){
+  var t = $('gateMsg');
+  t.textContent = msg;
+  t.classList.toggle('bad', bad !== false);
+  t.classList.add('show');
 }
 function openMask(){ $('mask').classList.add('show'); }
 function closeMask(){
@@ -466,22 +571,43 @@ function closeMask(){
   $('gate').style.display = '';
   $('pw').value = '';
   $('gateMsg').classList.remove('show');
+  $('recWrap').innerHTML = '';
 }
 
-$('adminOpen').addEventListener('click', function(){ openMask(); $('pw').focus(); });
+var AUTH_MSG = {
+  'auth/invalid-email':'이메일 형식이 올바르지 않아요.',
+  'auth/user-not-found':'등록되지 않은 계정이에요.',
+  'auth/wrong-password':'비밀번호가 맞지 않아요.',
+  'auth/invalid-credential':'이메일이나 비밀번호가 맞지 않아요.',
+  'auth/too-many-requests':'시도가 너무 많아요. 잠시 후 다시 해주세요.',
+  'auth/network-request-failed':'인터넷 연결을 확인해 주세요.',
+  'auth/operation-not-allowed':'Firebase 콘솔에서 이메일/비밀번호 로그인을 켜주세요.'
+};
+
+$('adminOpen').addEventListener('click', function(){ openMask(); $('adminEmail').focus(); });
 $('gateCancel').addEventListener('click', closeMask);
 $('gateOk').addEventListener('click', function(){
-  if($('pw').value === PASSWORD){
+  var email = $('adminEmail').value.trim(), pw = $('pw').value;
+  if(!email || !pw){ gateMsg('이메일과 비밀번호를 모두 입력해 주세요.'); return; }
+  var btn = $('gateOk');
+  btn.disabled = true; btn.textContent = '확인 중…';
+  fbReady.then(function(){
+    return FB.au.signInWithEmailAndPassword(FB.auth, email, pw);
+  }).then(function(){
     $('gate').style.display = 'none';
     buildEditors();
     $('panel').style.display = '';
-    $('panel').scrollIntoView({block:'start'});
-  } else {
-    $('gateMsg').classList.add('show');
+    $('whoami').textContent = email;
+    $('panel').scrollIntoView({ block:'start' });
+  }).catch(function(e){
+    gateMsg(AUTH_MSG[e && e.code] || '로그인하지 못했어요. 인터넷 연결을 확인해 주세요.');
     $('pw').select();
-  }
+  }).then(function(){
+    btn.disabled = false; btn.textContent = '들어가기';
+  });
 });
 $('pw').addEventListener('keydown', function(e){ if(e.key === 'Enter') $('gateOk').click(); });
+$('adminEmail').addEventListener('keydown', function(e){ if(e.key === 'Enter') $('pw').focus(); });
 document.addEventListener('keydown', function(e){
   if(e.key === 'Escape' && $('mask').classList.contains('show')) closeMask();
 });
@@ -492,17 +618,26 @@ $('btnSave').addEventListener('click', function(){
     C[el.getAttribute('data-edit')] = el.value;
   });
   apply();
-  var saved = persist();
-  toast(saved ? '저장했어요. 화면에 바로 반영됐어요.'
-              : '화면에는 반영했지만 이 브라우저에 저장되지 않았어요. 내보내기로 백업해 주세요.', !saved);
+  var btn = $('btnSave');
+  btn.disabled = true; btn.textContent = '저장 중…';
+  saveContent().then(function(){
+    toast('저장했어요. 모든 방문자에게 바로 반영돼요.');
+  }).catch(function(e){
+    if(e && e.message === 'unauthorized') toast('로그인이 풀렸어요. 창을 닫고 다시 들어와 주세요.', true);
+    else if(e && e.code === 'permission-denied') toast('저장 권한이 없어요. Firestore 규칙의 관리자 이메일을 확인해 주세요.', true);
+    else toast('서버에 저장하지 못했어요. 이 브라우저에만 남았으니 내보내기로 백업해 주세요.', true);
+  }).then(function(){
+    btn.disabled = false; btn.textContent = '저장하기';
+  });
 });
 $('btnReset').addEventListener('click', function(){
   for(var k in DEFAULTS) C[k] = DEFAULTS[k];
-  apply(); persist(); buildEditors();
-  toast('기본 문구로 되돌렸어요.');
+  apply(); buildEditors();
+  saveContent().then(function(){ toast('기본 문구로 되돌렸어요.'); })
+               .catch(function(){ toast('화면만 되돌렸어요. 저장하기를 눌러 서버에 반영해 주세요.', true); });
 });
 $('btnExport').addEventListener('click', function(){
-  var blob = new Blob([JSON.stringify(C, null, 2)], {type:'application/json'});
+  var blob = new Blob([JSON.stringify(C, null, 2)], { type:'application/json' });
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'nekidung-content.json';
@@ -517,15 +652,58 @@ $('importFile').addEventListener('change', function(){
   var reader = new FileReader();
   reader.onload = function(){
     try{
-      if(!merge(JSON.parse(reader.result))) throw new Error('형식 오류');
-      apply(); persist(); buildEditors();
-      toast('불러왔어요.');
+      var obj = JSON.parse(reader.result);
+      merge(obj);
+      apply(); cacheLocal(); buildEditors();
+      toast('불러왔어요. 저장하기를 눌러야 서버에 반영돼요.');
     }catch(e){
       toast('JSON 형식이 아니거나 내용이 비어 있어요.', true);
     }
   };
   reader.readAsText(file);
   this.value = '';
+});
+
+/* 최근 기록 보기 */
+function fmtDate(ts){
+  if(!ts || !ts.toDate) return '';
+  var d = ts.toDate();
+  return (d.getMonth()+1) + '/' + d.getDate() + ' ' +
+         ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2);
+}
+$('btnRecords').addEventListener('click', function(){
+  var wrap = $('recWrap');
+  wrap.innerHTML = '<p class="recempty">불러오는 중…</p>';
+  fbReady.then(function(){
+    var q = FB.fs.query(
+      FB.fs.collection(FB.db, RECORDS_COL),
+      FB.fs.orderBy('createdAt','desc'),
+      FB.fs.limit(20)
+    );
+    return FB.fs.getDocs(q);
+  }).then(function(snap){
+    if(snap.empty){ wrap.innerHTML = '<p class="recempty">아직 저장된 기록이 없어요.</p>'; return; }
+    var rows = [];
+    snap.forEach(function(d){
+      var r = d.data();
+      var birth = (r.calendar === 'lunar' ? '음력 ' : '양력 ') +
+                  (r.input ? r.input.y + '.' + r.input.m + '.' + r.input.d : '') +
+                  (r.leap ? ' (윤달)' : '');
+      rows.push('<div class="recitem"><div class="rec1"><b>' + esc(r.name || '이름 없음') +
+                '</b><span>' + esc(fmtDate(r.createdAt)) + '</span></div>' +
+                '<div class="rec2">' + esc(birth) + ' · ' + esc(r.palja || '') + '</div></div>');
+    });
+    wrap.innerHTML = '<div class="reclist">' + rows.join('') + '</div>';
+  }).catch(function(e){
+    wrap.innerHTML = '<p class="recempty">기록을 불러오지 못했어요. ' +
+      (e && e.code === 'permission-denied' ? 'Firestore 규칙을 확인해 주세요.' : '연결을 확인해 주세요.') + '</p>';
+  });
+});
+
+$('btnLogout').addEventListener('click', function(){
+  fbReady.then(function(){ return FB.au.signOut(FB.auth); })
+         .catch(function(){})
+         .then(function(){ closeMask(); });
 });
 $('btnClose').addEventListener('click', closeMask);
 })();
@@ -810,6 +988,30 @@ $('submit').addEventListener('click', function(){
 
   $('result').classList.add('show');
   $('result').scrollIntoView({behavior:'smooth', block:'start'});
+
+  /* ── Firebase 기록 + 이벤트 ── */
+  var palja = cols.map(function(c){
+    return c[1] ? GAN_H[c[1].gan] + JI_H[c[1].ji] : '__';
+  }).join(' ');
+  if(window.NK){
+    if(window.NK.saveRecord) window.NK.saveRecord({
+      name:name,
+      calendar:lunar ? 'lunar' : 'solar',
+      leap:!!leap,
+      input:{y:Y, m:M, d:D},
+      solar:{y:g.y, m:g.m, d:g.d},
+      hourIndex:hi,
+      palja:palja,
+      ilgan:GAN_H[s.day.gan],
+      animal:ANIMAL[s.year.ji],
+      term:s.term
+    });
+    if(window.NK.track) window.NK.track('saju_result', {
+      calendar:lunar ? 'lunar' : 'solar',
+      hour_known:hi !== null,
+      ilgan:GAN[s.day.gan]
+    });
+  }
 });
 
 $('again').addEventListener('click', function(){
@@ -823,4 +1025,3 @@ refresh();
 </script>
 </body>
 </html>
-
