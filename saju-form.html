@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>사주 보기 · 네 기둥 세우기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3F1FB;
+    --paper:#FFFFFF;
+    --ink:#4A4458;
+    --ink-soft:#8B84A3;
+    --line:#E7E2F7;
+    --lilac:#C6B8F2;
+    --lilac-deep:#9E8AE0;
+    --mint:#AEE3D4;
+    --butter:#FFE9A8;
+    --apricot:#FFC8A6;
+    --blush:#FFD3E2;
+    --radius-card:30px;
+    --radius-field:16px;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    padding:40px 20px 72px;
+    background-color:var(--bg);
+    background-image:radial-gradient(var(--line) 1.4px, transparent 1.4px);
+    background-size:22px 22px;
+    font-family:'Gowun Dodum', -apple-system, BlinkMacSystemFont, sans-serif;
+    color:var(--ink);
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .sheet{
+    max-width:520px;
+    margin:0 auto;
+    background:var(--paper);
+    border:2px solid var(--line);
+    border-radius:var(--radius-card);
+    box-shadow:0 18px 40px -18px rgba(140,120,205,.30);
+    padding:36px 30px 34px;
+  }
+
+  /* ── 머리말 ───────────────────────────── */
+  .head{text-align:center;margin-bottom:26px;}
+  .moon{display:block;margin:0 auto 10px;}
+  h1{
+    font-family:'Jua', sans-serif;
+    font-weight:400;
+    font-size:29px;
+    letter-spacing:-.5px;
+    margin:0 0 6px;
+  }
+  .head p{margin:0;color:var(--ink-soft);font-size:14.5px;}
+
+  /* ── 네 기둥 ───────────────────────────── */
+  .pillars{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:9px;
+    margin-bottom:30px;
+  }
+  .pillar{
+    border:2px dashed var(--line);
+    border-radius:20px;
+    padding:13px 4px 12px;
+    text-align:center;
+    background:#FCFBFF;
+    transition:background-color .35s ease, border-color .35s ease, transform .35s ease;
+  }
+  .pillar .glyph{
+    font-family:'Jua', sans-serif;
+    font-size:20px;
+    color:#C8C2DC;
+    display:block;
+    line-height:1.2;
+    transition:color .35s ease;
+  }
+  .pillar .val{
+    display:block;
+    margin-top:3px;
+    font-size:13px;
+    color:#C8C2DC;
+    min-height:22px;
+    transition:color .35s ease;
+  }
+  .pillar.on{border-style:solid;border-color:transparent;transform:translateY(-3px);}
+  .pillar.on .glyph,.pillar.on .val{color:var(--ink);}
+  .pillar.on[data-p="year"] {background:var(--mint);}
+  .pillar.on[data-p="month"]{background:var(--butter);}
+  .pillar.on[data-p="day"]  {background:var(--apricot);}
+  .pillar.on[data-p="hour"] {background:var(--lilac);}
+
+  /* ── 입력 ─────────────────────────────── */
+  .field{margin-bottom:22px;}
+  .field > label,
+  .legend{
+    display:block;
+    font-size:14.5px;
+    margin-bottom:9px;
+    color:var(--ink);
+  }
+  .legend .hint{color:var(--ink-soft);font-size:13px;}
+
+  fieldset{border:0;margin:0;padding:0;}
+
+  input[type="text"], select{
+    width:100%;
+    font-family:inherit;
+    font-size:15.5px;
+    color:var(--ink);
+    background:#FBFAFF;
+    border:2px solid var(--line);
+    border-radius:var(--radius-field);
+    padding:12px 14px;
+    appearance:none;
+    transition:border-color .2s ease, background-color .2s ease;
+  }
+  input[type="text"]::placeholder{color:#BDB6D0;}
+  select{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%239E8AE0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 14px center;
+    padding-right:36px;
+    cursor:pointer;
+  }
+  input[type="text"]:hover, select:hover{border-color:#D7CFF3;}
+  input[type="text"]:focus, select:focus{
+    outline:none;
+    border-color:var(--lilac-deep);
+    background:#fff;
+  }
+  :focus-visible{outline:3px solid #DFD6FA;outline-offset:2px;}
+
+  .row{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:9px;}
+
+  /* 양력·음력 */
+  .segmented{
+    display:inline-flex;
+    background:#F5F2FE;
+    border-radius:999px;
+    padding:4px;
+    gap:2px;
+    margin-bottom:11px;
+  }
+  .segmented label{position:relative;cursor:pointer;}
+  .segmented input{position:absolute;opacity:0;width:100%;height:100%;left:0;top:0;margin:0;cursor:pointer;}
+  .segmented span{
+    display:block;
+    padding:7px 20px;
+    border-radius:999px;
+    font-size:14.5px;
+    color:var(--ink-soft);
+    transition:background-color .2s ease, color .2s ease;
+  }
+  .segmented input:checked + span{background:var(--lilac-deep);color:#fff;}
+  .segmented input:focus-visible + span{outline:3px solid #DFD6FA;outline-offset:2px;}
+
+  /* 체크박스 */
+  .check{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;color:var(--ink-soft);}
+  .check input{
+    appearance:none;
+    width:19px;height:19px;
+    margin:0;
+    border:2px solid var(--line);
+    border-radius:7px;
+    background:#FBFAFF;
+    cursor:pointer;
+    transition:background-color .2s ease, border-color .2s ease;
+  }
+  .check input:checked{
+    background:var(--lilac-deep) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='9' viewBox='0 0 11 9'%3E%3Cpath d='M1 4.5 4 7.5 10 1.5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center no-repeat;
+    border-color:var(--lilac-deep);
+  }
+  .check input:checked + span{color:var(--ink);}
+  #leapWrap{display:none;margin-top:10px;}
+  #leapWrap.show{display:block;}
+
+  .note{margin:9px 0 0;font-size:13px;color:var(--ink-soft);}
+
+  /* 오류 */
+  .error{
+    display:none;
+    margin:8px 0 0;
+    font-size:13.5px;
+    color:#D96A8A;
+  }
+  .error.show{display:block;}
+  .invalid input[type="text"], .invalid select{border-color:#F2B6C8;background:#FFF8FA;}
+
+  /* 버튼 */
+  .submit{
+    width:100%;
+    font-family:'Jua', sans-serif;
+    font-size:18px;
+    color:#fff;
+    background:var(--lilac-deep);
+    border:0;
+    border-radius:999px;
+    padding:16px;
+    margin-top:6px;
+    cursor:pointer;
+    transition:background-color .2s ease, transform .1s ease;
+  }
+  .submit:hover{background:#8E77DA;}
+  .submit:active{transform:scale(.985);}
+
+  /* 결과 */
+  .result{
+    display:none;
+    margin-top:24px;
+    padding:22px;
+    border-radius:24px;
+    background:#F7F4FF;
+    border:2px solid var(--line);
+    text-align:center;
+  }
+  .result.show{display:block;}
+  .result h2{font-family:'Jua',sans-serif;font-weight:400;font-size:20px;margin:0 0 8px;}
+  .result p{margin:0;font-size:15px;}
+  .result .again{
+    background:none;border:0;
+    font-family:inherit;font-size:14px;
+    color:var(--lilac-deep);
+    text-decoration:underline;
+    cursor:pointer;
+    margin-top:14px;
+    padding:4px;
+  }
+
+  @media (max-width:420px){
+    body{padding:24px 14px 48px;}
+    .sheet{padding:28px 20px 26px;border-radius:24px;}
+    h1{font-size:25px;}
+    .row{grid-template-columns:1fr 1fr;}
+    .row .yr{grid-column:1 / -1;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<main class="sheet">
+  <div class="head">
+    <svg class="moon" width="46" height="46" viewBox="0 0 46 46" aria-hidden="true">
+      <circle cx="23" cy="24" r="14" fill="#FFE9A8"/>
+      <circle cx="17.5" cy="24" r="14" fill="#fff"/>
+      <circle cx="37" cy="11" r="2.6" fill="#C6B8F2"/>
+      <circle cx="8" cy="14" r="1.8" fill="#AEE3D4"/>
+      <circle cx="39" cy="33" r="1.8" fill="#FFC8A6"/>
+    </svg>
+    <h1>네 기둥을 세워요</h1>
+    <p>태어난 해·달·날·시간을 적으면 사주가 만들어져요.</p>
+  </div>
+
+  <div class="pillars" aria-hidden="true">
+    <div class="pillar" data-p="year"><span class="glyph">年</span><span class="val" id="pvYear">해</span></div>
+    <div class="pillar" data-p="month"><span class="glyph">月</span><span class="val" id="pvMonth">달</span></div>
+    <div class="pillar" data-p="day"><span class="glyph">日</span><span class="val" id="pvDay">날</span></div>
+    <div class="pillar" data-p="hour"><span class="glyph">時</span><span class="val" id="pvHour">시간</span></div>
+  </div>
+
+  <div class="field" id="nameField">
+    <label for="name">이름</label>
+    <input type="text" id="name" placeholder="이름을 적어주세요" autocomplete="name">
+    <p class="error" id="nameError">이름을 적어주세요.</p>
+  </div>
+
+  <div class="field" id="birthField">
+    <fieldset>
+      <legend class="legend">생년월일</legend>
+      <div class="segmented" role="radiogroup" aria-label="달력 기준">
+        <label><input type="radio" name="cal" value="solar" checked><span>양력</span></label>
+        <label><input type="radio" name="cal" value="lunar"><span>음력</span></label>
+      </div>
+      <div class="row">
+        <select id="year" class="yr" aria-label="태어난 해"></select>
+        <select id="month" aria-label="태어난 달"></select>
+        <select id="day" aria-label="태어난 날"></select>
+      </div>
+      <div id="leapWrap">
+        <label class="check"><input type="checkbox" id="leap"><span>윤달에 태어났어요</span></label>
+      </div>
+      <p class="error" id="birthError">태어난 해·달·날을 모두 골라주세요.</p>
+    </fieldset>
+  </div>
+
+  <div class="field" id="hourField">
+    <label for="hour">태어난 시간 <span class="hint">(십이시진)</span></label>
+    <select id="hour"></select>
+    <label class="check" style="margin-top:11px;">
+      <input type="checkbox" id="unknownHour"><span>시간을 몰라요</span>
+    </label>
+    <p class="note">시간을 모르면 시주 없이 세 기둥으로 봐요.</p>
+  </div>
+
+  <button class="submit" id="submit">사주 세우기</button>
+
+  <div class="result" id="result" role="status">
+    <h2>네 기둥이 세워졌어요</h2>
+    <p id="resultText"></p>
+    <button class="again" id="again">다시 입력하기</button>
+  </div>
+</main>
+
+<script>
+(function(){
+  var HOURS = [
+    ['자','자시','23:30 ~ 01:29','쥐'],
+    ['축','축시','01:30 ~ 03:29','소'],
+    ['인','인시','03:30 ~ 05:29','호랑이'],
+    ['묘','묘시','05:30 ~ 07:29','토끼'],
+    ['진','진시','07:30 ~ 09:29','용'],
+    ['사','사시','09:30 ~ 11:29','뱀'],
+    ['오','오시','11:30 ~ 13:29','말'],
+    ['미','미시','13:30 ~ 15:29','양'],
+    ['신','신시','15:30 ~ 17:29','원숭이'],
+    ['유','유시','17:30 ~ 19:29','닭'],
+    ['술','술시','19:30 ~ 21:29','개'],
+    ['해','해시','21:30 ~ 23:29','돼지']
+  ];
+
+  var $ = function(id){ return document.getElementById(id); };
+  var yearSel = $('year'), monthSel = $('month'), daySel = $('day'), hourSel = $('hour');
+
+  function option(v, t){ var o = document.createElement('option'); o.value = v; o.textContent = t; return o; }
+
+  // 연 / 월 / 시 채우기
+  yearSel.appendChild(option('', '연도'));
+  var thisYear = new Date().getFullYear();
+  for (var y = thisYear; y >= 1930; y--) yearSel.appendChild(option(y, y + '년'));
+
+  monthSel.appendChild(option('', '월'));
+  for (var m = 1; m <= 12; m++) monthSel.appendChild(option(m, m + '월'));
+
+  hourSel.appendChild(option('', '시간을 골라주세요'));
+  HOURS.forEach(function(h, i){
+    hourSel.appendChild(option(i, h[1] + ' · ' + h[2] + ' · ' + h[3]));
+  });
+
+  function isLunar(){
+    return document.querySelector('input[name="cal"]:checked').value === 'lunar';
+  }
+
+  function daysInMonth(){
+    var y = parseInt(yearSel.value, 10), m = parseInt(monthSel.value, 10);
+    if (!m) return 31;
+    if (isLunar()) return 30;
+    if (m === 2) return (y && ((y % 4 === 0 && y % 100 !== 0) || y % 400 === 0)) ? 29 : 28;
+    return [4,6,9,11].indexOf(m) > -1 ? 30 : 31;
+  }
+
+  function buildDays(){
+    var keep = daySel.value, max = daysInMonth();
+    daySel.innerHTML = '';
+    daySel.appendChild(option('', '일'));
+    for (var d = 1; d <= max; d++) daySel.appendChild(option(d, d + '일'));
+    if (keep && parseInt(keep, 10) <= max) daySel.value = keep;
+  }
+  buildDays();
+
+  // 기둥 갱신
+  function setPillar(name, filled, text){
+    var el = document.querySelector('.pillar[data-p="' + name + '"]');
+    el.classList.toggle('on', !!filled);
+    $('pv' + name.charAt(0).toUpperCase() + name.slice(1)).textContent = text;
+  }
+
+  function refresh(){
+    setPillar('year',  yearSel.value,  yearSel.value  ? yearSel.value + '년' : '해');
+    setPillar('month', monthSel.value, monthSel.value ? monthSel.value + '월' : '달');
+    setPillar('day',   daySel.value,   daySel.value   ? daySel.value + '일'  : '날');
+
+    if ($('unknownHour').checked) setPillar('hour', false, '모름');
+    else if (hourSel.value !== '') setPillar('hour', true, HOURS[hourSel.value][0] + '시');
+    else setPillar('hour', false, '시간');
+  }
+
+  [yearSel, monthSel].forEach(function(el){
+    el.addEventListener('change', function(){ buildDays(); refresh(); });
+  });
+  daySel.addEventListener('change', refresh);
+  hourSel.addEventListener('change', refresh);
+
+  document.querySelectorAll('input[name="cal"]').forEach(function(r){
+    r.addEventListener('change', function(){
+      $('leapWrap').classList.toggle('show', isLunar());
+      if (!isLunar()) $('leap').checked = false;
+      buildDays();
+      refresh();
+    });
+  });
+
+  $('unknownHour').addEventListener('change', function(){
+    hourSel.disabled = this.checked;
+    hourSel.style.opacity = this.checked ? .45 : 1;
+    if (this.checked) hourSel.value = '';
+    refresh();
+  });
+
+  // 제출
+  function flag(fieldId, errorId, bad){
+    $(fieldId).classList.toggle('invalid', bad);
+    $(errorId).classList.toggle('show', bad);
+  }
+
+  $('submit').addEventListener('click', function(){
+    var name = $('name').value.trim();
+    var noName = !name;
+    var noDate = !yearSel.value || !monthSel.value || !daySel.value;
+
+    flag('nameField', 'nameError', noName);
+    flag('birthField', 'birthError', noDate);
+
+    if (noName || noDate){
+      $('result').classList.remove('show');
+      $(noName ? 'name' : 'year').focus();
+      return;
+    }
+
+    var cal = isLunar() ? ($('leap').checked ? '음력 윤달' : '음력') : '양력';
+    var when = $('unknownHour').checked
+      ? '시간 모름'
+      : (hourSel.value !== '' ? HOURS[hourSel.value][1] + '(' + HOURS[hourSel.value][2] + ')' : '시간 모름');
+
+    $('resultText').textContent =
+      name + '님 · ' + cal + ' ' + yearSel.value + '년 ' + monthSel.value + '월 ' + daySel.value + '일 · ' + when;
+    $('result').classList.add('show');
+    $('result').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  });
+
+  $('again').addEventListener('click', function(){
+    $('result').classList.remove('show');
+    $('name').focus();
+  });
+
+  refresh();
+})();
+</script>
+</body>
+</html>
